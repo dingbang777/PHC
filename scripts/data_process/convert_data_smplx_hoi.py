@@ -14,6 +14,7 @@ import os.path as osp
 sys.path.append(os.getcwd())
 
 from smpl_sim.smpllib.smpl_mujoco_new import SMPL_BONE_ORDER_NAMES as joint_names
+from smpl_sim.smpllib.smpl_joint_names import SMPL_BONE_ORDER_NAMES, SMPLH_BONE_ORDER_NAMES, SMPLX_BONE_ORDER_NAMES, SMPL_MUJOCO_NAMES, SMPLH_MUJOCO_NAMES
 from smpl_sim.smpllib.smpl_local_robot import SMPL_Robot as LocalRobot
 import scipy.ndimage.filters as filters
 from typing import List, Optional
@@ -22,7 +23,7 @@ from poselib.poselib.skeleton.skeleton3d import SkeletonTree, SkeletonMotion, Sk
 
 robot_cfg = {
     "mesh": False,
-    "model": "smpl",
+    "model": "smplh",
     "upright_start": True,
     "body_params": {},
     "joint_params": {},
@@ -57,8 +58,10 @@ for idx in range(1):
 
     start, end = 0, 0
 
-    pose_aa = smpl_data_entry['poses'].copy()[start:]
+    pose_aa = smpl_data_entry['poses'].copy()[start:][:,:156]
+    print(pose_aa.shape, pose_aa.dtype)
     root_trans = smpl_data_entry['trans'].copy()[start:]
+
     B = pose_aa.shape[0]
 
     beta = smpl_data_entry['beta'].copy() if "beta" in smpl_data_entry else smpl_data_entry['betas'].copy()
@@ -82,27 +85,28 @@ for idx in range(1):
         gender_number = [2]
     else:
         import ipdb
-        print('gender1111',gender)
         ipdb.set_trace()
         raise Exception("Gender Not Supported!!")
 
-    smpl_2_mujoco = [joint_names.index(q) for q in mujoco_joint_names if q in joint_names]
+    smpl_2_mujoco = [SMPLH_BONE_ORDER_NAMES.index(q) for q in SMPLH_MUJOCO_NAMES if q in SMPLH_BONE_ORDER_NAMES]
     batch_size = pose_aa.shape[0]
-    pose_aa = np.concatenate([pose_aa[:, :66], np.zeros((batch_size, 6))], axis=1)
-    pose_aa_mj = pose_aa.reshape(-1, 24, 3)[..., smpl_2_mujoco, :].copy()
+    # pose_aa = np.concatenate([pose_aa[:, :66], np.zeros((batch_size, 6))], axis=1)
+    pose_aa = pose_aa
+    print(pose_aa.shape, pose_aa.dtype, smpl_2_mujoco)
+    pose_aa_mj = pose_aa.reshape(-1, 52, 3)[..., smpl_2_mujoco, :].copy()
 
     num = 1
     if double:
         num = 2
     for idx in range(num):
-        pose_quat = sRot.from_rotvec(pose_aa_mj.reshape(-1, 3)).as_quat().reshape(batch_size, 24, 4)
+        pose_quat = sRot.from_rotvec(pose_aa_mj.reshape(-1, 3)).as_quat().reshape(batch_size, 52, 4)
 
         gender_number, beta[:], gender = [0], 0, "neutral"
         print("using neutral model")
 
         smpl_local_robot.load_from_skeleton(betas=torch.from_numpy(beta[None,]), gender=gender_number, objs_info=None)
-        smpl_local_robot.write_xml("smpl_humanoid_test.xml")
-        skeleton_tree = SkeletonTree.from_mjcf("smpl_humanoid_test.xml")
+        smpl_local_robot.write_xml("smplh_humanoid_intercap.xml")
+        skeleton_tree = SkeletonTree.from_mjcf("smplh_humanoid_intercap.xml")
 
         root_trans_offset = torch.from_numpy(root_trans) + skeleton_tree.local_translation[0]
 
@@ -142,4 +146,4 @@ for idx in range(1):
         full_motion_dict[key_name_dump] = new_motion_out
 
 # import ipdb; ipdb.set_trace()
-joblib.dump(full_motion_dict, "walking_motions11.pkl")
+joblib.dump(full_motion_dict, "intercap_test2.pkl")

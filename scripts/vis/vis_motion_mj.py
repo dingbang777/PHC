@@ -56,6 +56,7 @@ def key_call_back( keycode):
 if __name__ == "__main__":
     device = torch.device("cpu")
     motion_file = "sample_data/amass_isaac_standing_upright_slim.pkl"
+    # motion_file = "/data-local/dingbang/phys_hoi_recon/PHC/walking_motions.pkl"
     curr_start, num_motions, motion_id, motion_acc, time_step, dt, paused = 0, 1, 0, set(), 0, 1/30, False
     motion_lib_cfg = EasyDict({
                     "motion_file": motion_file,
@@ -99,6 +100,18 @@ if __name__ == "__main__":
     sk_tree = SkeletonTree.from_mjcf(test_good)
     motion_lib = MotionLibSMPL(motion_lib_cfg)
     motion_lib.load_motions(skeleton_trees=[sk_tree] * num_motions, gender_betas=[torch.zeros(17)] * num_motions, limb_weights=[np.zeros(10)] * num_motions, random_sample=False, start_idx=curr_start)
+    
+
+
+
+    step_start = time.time()
+    motion_len = motion_lib.get_motion_length(motion_id).item()
+    motion_time = time_step % motion_len
+    motion_res = motion_lib.get_motion_state(torch.tensor([motion_id]).to(device), torch.tensor([motion_time]).to(device))
+
+    root_pos, root_rot, dof_pos, root_vel, root_ang_vel, dof_vel, smpl_params, limb_weights, pose_aa, rb_pos, rb_rot, body_vel, body_ang_vel = \
+        motion_res["root_pos"], motion_res["root_rot"], motion_res["dof_pos"], motion_res["root_vel"], motion_res["root_ang_vel"], motion_res["dof_vel"], \
+        motion_res["motion_bodies"], motion_res["motion_limb_weights"], motion_res["motion_aa"], motion_res["rg_pos"], motion_res["rb_rot"], motion_res["body_vel"], motion_res["body_ang_vel"]
     
     mj_model = mujoco.MjModel.from_xml_path(test_good)
     mj_data = mujoco.MjData(mj_model)

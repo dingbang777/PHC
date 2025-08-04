@@ -30,6 +30,10 @@ from phc.utils.motion_lib_base import FixHeightMode
 flags.test = True
 flags.im_eval = True
 
+motion_file = "intercap_test2.pkl"
+
+beta = joblib.load(motion_file)['test']['beta']
+gender_number = joblib.load(motion_file)['test']['gender_number']
 
 def clamp(x, min_value, max_value):
     return max(min(x, max_value), min_value)
@@ -47,27 +51,46 @@ class AssetDesc:
 
 masterfoot = False
 # masterfoot = True
+# robot_cfg = {
+#     "mesh": False,
+#     "rel_joint_lm": False,
+#     "upright_start": True,
+#     "remove_toe": False,
+#     "real_weight_proportion_capsules": True,
+#     "model": "smplh",
+#     "body_params": {},
+#     "joint_params": {},
+#     "geom_params": {},
+#     "actuator_params": {},
+# }
+
 robot_cfg = {
-    "mesh": True,
+    "mesh": False,
     "rel_joint_lm": False,
-    "masterfoot": masterfoot,
     "upright_start": True,
     "remove_toe": False,
-    "real_weight_porpotion_capsules": True,
-    "model": "smpl",
+    "real_weight_proportion_capsules": True,
+    "model": "smplx",
     "body_params": {},
     "joint_params": {},
     "geom_params": {},
     "actuator_params": {},
 }
+
+ 
 smpl_robot = SMPL_Robot(
     robot_cfg,
     data_dir="data/smpl",
 )
-
-gender_beta = np.array([1.0000, -0.2141, -0.1140, 0.3848, 0.9583, 1.7619, 1.5040, 0.5765, 0.9636, 0.2636, -0.4202, 0.5075, -0.7371, -2.6490, 0.0867, 1.4699, -1.1865])
+beta2 = np.array([
+1.2644597, 0.4629662, -0.9876839, -0.6337372, 1.4846485, -0.05660084,
+1.6636678, -0.7218272, 2.580027, 2.314394, 0.6696473, 0.10814083,
+1.5411701, 0.31156713, -0.6719442, 0.4843772
+])
+# gender_beta = np.array([1.0000, -0.2141, -0.1140, 0.3848, 0.9583, 1.7619, 1.5040, 0.5765, 0.9636, 0.2636, -0.4202, 0.5075, -0.7371, -2.6490, 0.0867, 1.4699, -1.1865])
+gender_beta = np.concatenate([gender_number, beta2], axis=0)
 smpl_robot.load_from_skeleton(betas=torch.from_numpy(gender_beta[None, 1:]), gender=gender_beta[0:1], objs_info=None)
-test_good = f"/tmp/smpl/test_good.xml"
+test_good = f"/tmp/smpl/smplh_humanoid_intercap4.xml"
 smpl_robot.write_xml(test_good)
 sk_tree = SkeletonTree.from_mjcf(test_good)
 
@@ -184,6 +207,12 @@ for i in range(num_envs):
     dof_states = np.zeros(num_dofs, dtype=gymapi.DofState.dtype)
     gym.set_actor_dof_states(env, actor_handle, dof_states, gymapi.STATE_ALL)
 
+
+axis_length = 1.0  # 轴长度，按需调整
+axes_geom = gymutil.AxesGeometry(axis_length)
+
+
+
 # Setup Motion
 body_ids = []
 key_body_names = ["R_Ankle", "L_Ankle", "R_Wrist", "L_Wrist"]
@@ -194,7 +223,7 @@ for body_name in key_body_names:
 gym.prepare_sim(sim)
 body_ids = np.array(body_ids)
 
-motion_file = "/data-local/dingbang/phys_hoi_recon/PHC/walking_motions.pkl"
+
 # motion_file = "data/amass/pkls/amass_isaac_im_train_upright_slim.pkl"
 # motion_file = "data/amass/pkls/amass_isaac_locomotion_upright.pkl"
 # motion_file = "data/amass/pkls/amass_isaac_slowalk_upright.pkl"
@@ -235,14 +264,14 @@ else:
 device = (torch.device("cuda", index=0) if torch.cuda.is_available() else torch.device("cpu"))
 motion_lib_cfg = EasyDict({
                 "motion_file": motion_file,
+                "smpl_type": "smplh",
                 "device": device,
-                "fix_height": FixHeightMode.full_fix,
+                "fix_height": FixHeightMode.no_fix,
                 "min_length": -1,
                 "max_length": -1,
                 "im_eval": False,
                 "multi_thread": False ,
-                "smpl_type": 'smpl',
-                "randomrize_heading": True,
+                "randomrize_heading": False,
             })
 # motion_lib = MotionLibSMPL(motion_file=motion_file, key_body_ids=body_ids, device=device, masterfoot_conifg=_masterfoot_config, fix_height=False, multi_thread=False)
 motion_lib = MotionLibSMPL(motion_lib_cfg)
@@ -280,6 +309,11 @@ while not gym.query_viewer_has_closed(viewer):
     motion_len = motion_lib.get_motion_length(motion_id).item()
     motion_time = time_step % motion_len
     # motion_time = 0
+
+    motion_all = motion_lib.get_motion_state_all(torch.tensor([motion_id]).to(args.compute_device_id))
+    motion_all = {k: v.cpu() for k, v in motion_all.items()}
+    #save motion data
+    torch.save(motion_all, "intercap2.pt")
 
     motion_res = motion_lib.get_motion_state(torch.tensor([motion_id]).to(args.compute_device_id), torch.tensor([motion_time]).to(args.compute_device_id))
 
@@ -359,6 +393,14 @@ while not gym.query_viewer_has_closed(viewer):
     # pose_quat = motion_lib._motion_data['0-ACCAD_Female1Running_c3d_C5 - walk to run_poses']['pose_quat_global']
     # diff = quat_mul(quat_inverse(rb_rot[0, :]), rigidbody_state[0, :, 3:7]); np.set_printoptions(precision=4, suppress=1); print(diff.cpu().numpy()); print(torch_utils.quat_to_angle_axis(diff)[0])
 
+
+    gym.clear_lines(viewer)
+    for env in envs:
+        # 在世界原点 (0,0,0) 处绘制 XYZ 三轴
+        origin_tf = gymapi.Transform()  
+        gymutil.draw_lines(axes_geom, gym, viewer, env, origin_tf)
+
+        
     # update the viewer
     gym.step_graphics(sim)
     gym.draw_viewer(viewer, sim, True)

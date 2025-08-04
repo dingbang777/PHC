@@ -14,6 +14,7 @@ import os.path as osp
 sys.path.append(os.getcwd())
 
 from smpl_sim.smpllib.smpl_mujoco_new import SMPL_BONE_ORDER_NAMES as joint_names
+from smpl_sim.smpllib.smpl_joint_names import SMPL_BONE_ORDER_NAMES, SMPLH_BONE_ORDER_NAMES, SMPLX_BONE_ORDER_NAMES, SMPL_MUJOCO_NAMES, SMPLH_MUJOCO_NAMES
 from smpl_sim.smpllib.smpl_local_robot import SMPL_Robot as LocalRobot
 import scipy.ndimage.filters as filters
 from typing import List, Optional
@@ -86,7 +87,7 @@ for idx in range(1):
         ipdb.set_trace()
         raise Exception("Gender Not Supported!!")
 
-    smpl_2_mujoco = [joint_names.index(q) for q in mujoco_joint_names if q in joint_names]
+    smpl_2_mujoco = [SMPLX_BONE_ORDER_NAMES.index(q) for q in SMPLH_MUJOCO_NAMES if q in SMPLX_BONE_ORDER_NAMES]
     batch_size = pose_aa.shape[0]
     pose_aa = np.concatenate([pose_aa[:, :66], np.zeros((batch_size, 6))], axis=1)
     pose_aa_mj = pose_aa.reshape(-1, 24, 3)[..., smpl_2_mujoco, :].copy()
@@ -142,4 +143,4 @@ for idx in range(1):
         full_motion_dict[key_name_dump] = new_motion_out
 
 # import ipdb; ipdb.set_trace()
-joblib.dump(full_motion_dict, "walking_motions11.pkl")
+joblib.dump(full_motion_dict, "walking_motions.pkl")

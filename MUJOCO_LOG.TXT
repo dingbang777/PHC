@@ -16,3 +16,21 @@ ERROR: could not initialize GLFW
 Tue Jan 28 01:18:17 2025
 ERROR: could not initialize GLFW
 
+Sat Jul 19 16:22:08 2025
+ERROR: could not initialize GLFW
+
+Sat Jul 19 16:27:11 2025
+ERROR: could not initialize GLFW
+
+Sat Jul 19 16:38:23 2025
+ERROR: could not initialize GLFW
+
+Sat Jul 19 16:39:25 2025
+ERROR: could not initialize GLFW
+
+Sat Jul 19 16:39:54 2025
+ERROR: could not initialize GLFW
+
+Sat Jul 19 16:48:52 2025
+ERROR: could not create window
+

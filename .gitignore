@@ -12,6 +12,7 @@ out/
 
 # Distribution / packaging
 .Python
+ACCAD/
 build/
 develop-eggs/
 dist/
@@ -142,3 +143,6 @@ output_videos/
 *.pt
 new_trials
 gh-md-toc
+
+*.pt
+*.obj

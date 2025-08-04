@@ -48,17 +48,18 @@ class MotionLibSMPL(MotionLibBase):
     def __init__(self, motion_lib_cfg):
         super().__init__(motion_lib_cfg = motion_lib_cfg)
         
-        data_dir = "data/smpl"
-        
+        data_dir = "/data-local/dingbang/phys_hoi_recon/PHC/data/smpl"
+        print(motion_lib_cfg.smpl_type)
         if osp.exists(data_dir):
             if motion_lib_cfg.smpl_type == "smpl":
                 smpl_parser_n = SMPL_Parser(model_path=data_dir, gender="neutral")
                 smpl_parser_m = SMPL_Parser(model_path=data_dir, gender="male")
                 smpl_parser_f = SMPL_Parser(model_path=data_dir, gender="female")
             elif motion_lib_cfg.smpl_type == "smplh":
-                smpl_parser_n = SMPLH_Parser(model_path=data_dir, gender="neutral")
-                smpl_parser_m = SMPLH_Parser(model_path=data_dir, gender="male")
-                smpl_parser_f = SMPLH_Parser(model_path=data_dir, gender="female")
+                smpl_parser_n = SMPLH_Parser(model_path=data_dir, gender="neutral", use_pca=False)
+                smpl_parser_m = SMPLH_Parser(model_path=data_dir, gender="male", use_pca=False)
+                smpl_parser_f = SMPLH_Parser(model_path=data_dir, gender="female", use_pca=False)
+                print(111111111111111111)
             elif motion_lib_cfg.smpl_type == "smplx":
                 smpl_parser_n = SMPLX_Parser(model_path=data_dir, gender="neutral", use_pca=False, create_transl=False, flat_hand_mean = True, num_betas=20)
                 smpl_parser_m = SMPLX_Parser(model_path=data_dir, gender="male", use_pca=False, create_transl=False, flat_hand_mean = True, num_betas=20)

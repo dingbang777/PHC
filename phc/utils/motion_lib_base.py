@@ -519,6 +519,22 @@ class MotionLibBase():
             "motion_limb_weights": self._motion_limb_weights[motion_ids],
         }
 
+    def get_motion_state_all(self, motion_ids, offset=None):
+        n = len(motion_ids)
+        num_bodies = self._get_num_bodies()
+
+        motion_len = self._motion_lengths[motion_ids]
+        num_frames = self._motion_num_frames[motion_ids]
+        dt = self._motion_dt[motion_ids]
+
+        motion_time_list = torch.arange(int(num_frames)).to(dt.device) * dt
+        out_all = []
+        for motion_time in motion_time_list:
+            out = self.get_motion_state(motion_ids, motion_time, offset=offset)
+            out_all.append(out)
+        out_all = {k: torch.stack([out[k] for out in out_all], dim=0) for k in out_all[0].keys()}
+        return out_all
+
     def get_root_pos_smpl(self, motion_ids, motion_times):
         n = len(motion_ids)
         num_bodies = self._get_num_bodies()
