@@ -148,4 +148,5 @@ gh-md-toc
 *.obj
 *.npz
 *.gz
+*.bz2
 *.xml
