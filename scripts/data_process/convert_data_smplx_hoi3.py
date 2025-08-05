@@ -38,9 +38,14 @@ smpl_local_robot = LocalRobot(
     data_dir="data/smpl",
 )
 
+smpl_local_robot2 = LocalRobot(
+    robot_cfg,
+    data_dir="data/smpl",
+)
+
 # amass_data = joblib.load("/data-local/dingbang/phys_hoi_recon/PHC/ACCAD/Male1Walking_c3d/Walk_B10_-_Walk_turn_left_45_stageii.npz")
-amass_data = np.load("/data-local/dingbang/phys_hoi_recon/InterAct/data/omomo/sequences_canonical/sub8_smallbox_002/human.npz", allow_pickle=True)
-obj_data = np.load("/data-local/dingbang/phys_hoi_recon/InterAct/data/omomo/sequences_canonical/sub8_smallbox_002/object.npz", allow_pickle=True)
+amass_data = np.load("/data-local/dingbang/phys_hoi_recon/InterAct/data/omomo/sequences_canonical/sub8_smallbox_030/human.npz", allow_pickle=True)
+obj_data = np.load("/data-local/dingbang/phys_hoi_recon/InterAct/data/omomo/sequences_canonical/sub8_smallbox_030/object.npz", allow_pickle=True)
 obj_data = obj_data
 # convert np to dict
 # amass_data = {k: v for k, v in amass_data.items()}

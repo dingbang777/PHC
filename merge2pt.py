@@ -36,12 +36,12 @@ data[:,321:321+4] = obj_rot
 
 
 from contact import get_contact
-human_path = '/data-local/dingbang/phys_hoi_recon/InterAct/data/omomo/sequences_canonical/sub8_smallbox_002/human.npz'
-obj_path = '/data-local/dingbang/phys_hoi_recon/InterAct/data/omomo/sequences_canonical/sub8_smallbox_002/object.npz'
+human_path = '/data-local/dingbang/phys_hoi_recon/InterAct/data/omomo/sequences_canonical/sub8_smallbox_030/human.npz'
+obj_path = '/data-local/dingbang/phys_hoi_recon/InterAct/data/omomo/sequences_canonical/sub8_smallbox_030/object.npz'
 obj_verts = '/data-local/dingbang/phys_hoi_recon/InterAct/data/omomo/objects/smallbox/smallbox.obj'
 human_contact, obj_contact = get_contact(human_path, obj_path, obj_verts)
 data[:,330:331] = obj_contact
 data[:, 331:331+52] = human_contact
 
-torch.save(data,'/data-local/dingbang/phys_hoi_recon/InterMimic/InterAct/InterCap/sub8_smallbox_002.pt')
+torch.save(data,'/data-local/dingbang/phys_hoi_recon/InterMimic/InterAct/InterCap/sub8_smallbox_030.pt')
 

@@ -443,10 +443,11 @@ class MotionLibBase():
         dt = self._motion_dt[motion_ids]
 
         frame_idx0, frame_idx1, blend = self._calc_frame_blend(motion_times, motion_len, num_frames, dt)
+
         # print("non_interval", frame_idx0, frame_idx1)
         f0l = frame_idx0 + self.length_starts[motion_ids]
         f1l = frame_idx1 + self.length_starts[motion_ids]
-
+        print(frame_idx0, frame_idx1, f0l, f1l, blend)
         local_rot0 = self.lrs[f0l]
         local_rot1 = self.lrs[f1l]
 
@@ -473,6 +474,7 @@ class MotionLibBase():
         if offset is None:
             rg_pos = (1.0 - blend_exp) * rg_pos0 + blend_exp * rg_pos1  # ZL: apply offset
         else:
+            print("Applying offset", offset)
             rg_pos = (1.0 - blend_exp) * rg_pos0 + blend_exp * rg_pos1 + offset[..., None, :]  # ZL: apply offset
 
         body_vel = (1.0 - blend_exp) * body_vel0 + blend_exp * body_vel1
